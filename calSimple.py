@@ -1,122 +1,96 @@
+from tkinter import Tk,Text,Button,END,re
 
-from tkinter import *
+class Interfaz:
+    def __init__(self, ventana):
+        #Inicializar la ventana con un título
+        self.ventana=ventana
+        self.ventana.title("Calculadora")
 
-# Crear una ventana con el título "Factorial"
-formulario=Tk()
-formulario.title("Calculadora")
+        #Agregar una caja de texto para que sea la pantalla de la calculadora
+        self.pantalla=Text(ventana, state="disabled", width=40, height=3, background="orchid", foreground="white", font=("Helvetica",15))
 
-num1=""
-num2=""
-res=0
-r=StringVar()
+        #Ubicar la pantalla en la ventana
+        self.pantalla.grid(row=0, column=0, columnspan=4, padx=5, pady=5)
 
-def sumar():
-    """
-    Toma el valor de la variable global cont, le suma 1 y luego establece el valor de la variable global c a la versión de la cadena del nuevo valor de cont
-    """
-    global res,r
-    _num1=int(ent.get())
-    _num2=int(ent2.get())
-    res=_num1+_num2
-    r.set(str(res))
+        #Inicializar la operación mostrada en pantalla como string vacío
+        self.operacion=""
 
-def restar():
-    """
-    Toma los dos números de los cuadros de entrada, los resta y pone el resultado en la etiqueta.
-    """
-    global res,r
-    _num1=int(ent.get())
-    _num2=int(ent2.get())
-    res=_num1-_num2
-    r.set(str(res))
+        #Crear los botones de la calculadora
+        boton1=self.crearBoton(7)
+        boton2=self.crearBoton(8)
+        boton3=self.crearBoton(9)
+        boton4=self.crearBoton(u"\u232B",escribir=False)
+        boton5=self.crearBoton(4)
+        boton6=self.crearBoton(5)
+        boton7=self.crearBoton(6)
+        boton8=self.crearBoton(u"\u00F7")
+        boton9=self.crearBoton(1)
+        boton10=self.crearBoton(2)
+        boton11=self.crearBoton(3)
+        boton12=self.crearBoton("*")
+        boton13=self.crearBoton(".")
+        boton14=self.crearBoton(0)
+        boton15=self.crearBoton("+")
+        boton16=self.crearBoton("-")
+        boton17=self.crearBoton("=",escribir=False,ancho=20,alto=2)
 
-def multiplicar():
-    """
-    Toma los dos números de las casillas de entrada, los multiplica y luego establece el resultado en la etiqueta.
-    """
-    global res,r
-    _num1=int(ent.get())
-    _num2=int(ent2.get())
-    res=_num1*_num2
-    r.set(str(res))
+        #Ubicar los botones con el gestor grid
+        botones=[boton1, boton2, boton3, boton4, boton5, boton6, boton7, boton8, boton9, boton10, boton11, boton12, boton13, boton14, boton15, boton16, boton17]
+        contador=0
+        for fila in range(1,5):
+            for columna in range(4):
+                botones[contador].grid(row=fila,column=columna)
+                contador+=1
+        #Ubicar el último botón al final
+        botones[16].grid(row=5,column=0,columnspan=4)
+        
+        return
 
-def dividir():
-    """
-    Toma los dos números de las casillas de entrada, los divide y luego establece el resultado en la etiqueta.
-    """
-    global res,r
-    _num1=int(ent.get())
-    _num2=int(ent2.get())
-    res=_num1/_num2
-    r.set(str(res))
 
-def por():
-    """
-    Toma los valores de las dos casillas de entrada, los multiplica, los divide por 100, y luego pone el
-    resultado en la etiqueta.
-    """
-    global res,r
-    _num1=int(ent.get())
-    _num2=int(ent2.get())
-    res=(_num1*_num2)/100
-    r.set(str(res))
+    #Crea un botón mostrando el valor pasado por parámetro
+    def crearBoton(self, valor, escribir=True, ancho=9, alto=1):
+        return Button(self.ventana, text=valor, width=ancho, height=alto, font=("Helvetica",15), command=lambda:self.click(valor,escribir))
 
-def reset():
-    """
-    Establece las variables globales res, r, num1 y num2 a 0 y luego establece el texto de la etiqueta r a
-    la versión de cadena de res
-    """
-    global res,r,num1,num2
-    res=0
-    r.set(str(res))
 
-# Crear una etiqueta con el texto "Primer numero" y colocarla en la primera columna y la primera fila.
-lb1=Label(formulario,text="Primer numero")
-lb1.grid(column=1,row=1)
+    #Controla el evento disparado al hacer click en un botón
+    def click(self, texto, escribir):
+        #Si el parámetro 'escribir' es True, entonces el parámetro texto debe mostrarse en pantalla. Si es False, no.
+        if not escribir:
+            #Sólo calcular si hay una operación a ser evaluada y si el usuario presionó '='
+            if texto=="=" and self.operacion!="":
+                #Reemplazar el valor unicode de la división por el operador división de Python '/'
+                self.operacion=re.sub(u"\u00F7", "/", self.operacion)
+                resultado=str(eval(self.operacion))
+                self.operacion=""
+                self.limpiarPantalla()
+                self.mostrarEnPantalla(resultado)
+            #Si se presionó el botón de borrado, limpiar la pantalla
+            elif texto==u"\u232B":
+                self.operacion=""
+                self.limpiarPantalla()
+        #Mostrar texto
+        else:
+            self.operacion+=str(texto)
+            self.mostrarEnPantalla(texto)
+        return
+    
 
-# Crea un cuadro de entrada y lo coloca en la segunda columna y primera fila.
-ent=Entry(formulario,width=10,textvariable=num1)
-ent.grid(column=2,row=1)
+    #Borra el contenido de la pantalla de la calculadora
+    def limpiarPantalla(self):
+        self.pantalla.configure(state="normal")
+        self.pantalla.delete("1.0", END)
+        self.pantalla.configure(state="disabled")
+        return
+    
 
-# Crea una etiqueta con el texto "Segundo número" y colócala en la primera columna y segunda fila.
-lb2=Label(formulario,text="Segundo numero")
-lb2.grid(column=1,row=2)
+    #Muestra en la pantalla de la calculadora el contenido de las operaciones y los resultados
+    def mostrarEnPantalla(self, valor):
+        self.pantalla.configure(state="normal")
+        self.pantalla.insert(END, valor)
+        self.pantalla.configure(state="disabled")
+        return
 
-# Crea un cuadro de entrada y lo coloca en la segunda columna y la segunda fila.
-ent2=Entry(formulario,width=10,textvariable=num2)
-ent2.grid(column=2,row=2)
 
-# Crea una etiqueta con el texto "Resultado" y colócala en la primera columna y tercera fila.
-lb3=Label(formulario,text="Resultado")
-lb3.grid(column=1,row=3)
-
-# Crea una etiqueta y la coloca en la segunda columna y tercera fila.
-lb4=Label(formulario,textvariable=r)
-lb4.grid(column=2,row=3)
-
-# Crea un botón con el texto "+", el comando sumar, y un ancho de 10. A continuación, coloca el botón en la primera columna y en la cuarta fila.
-btn=Button(formulario,text="+",command=sumar,width="10")
-btn.grid(column=1,row=4)
-
-# Crea un botón con el texto "-", el comando restar, y un ancho de 10. A continuación, coloca el botón en la segunda columna y la cuarta fila.
-btn2=Button(formulario,text="-",command=restar,width="10")
-btn2.grid(column=2,row=4)
-
-# Crea un botón con el texto "*", el comando multiplicar y un ancho de 10. A continuación, coloca el botón en la primera columna y la quinta fila.
-btn3=Button(formulario,text="*",command=multiplicar,width="10")
-btn3.grid(column=1,row=5)
-
-# Crea un botón con el texto "/", el comando dividir y un ancho de 10. A continuación, coloca el botón en la segunda columna y la quinta fila.
-btn4=Button(formulario,text="/",command=dividir,width="10")
-btn4.grid(column=2,row=5)
-
-# Crea un botón con el texto "%", el comando por, y un ancho de 10. A continuación, coloca el botón en la primera columna y sexta fila.
-btn5=Button(formulario,text="%",command=por,width="10")
-btn5.grid(column=1,row=6)
-
-# Crea un botón con el texto "CLEAR", el comando reset, y un ancho de 10. A continuación, coloca el botón en la segunda columna y sexta fila.
-btn6=Button(formulario,text="CLEAR",command=reset,width="10")
-btn6.grid(column=2,row=6)
-
-# Hacer que la ventana permanezca abierta hasta que el usuario la cierre.
-formulario.mainloop()
+ventana_principal=Tk()
+calculadora=Interfaz(ventana_principal)
+ventana_principal.mainloop()
